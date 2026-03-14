@@ -90,9 +90,9 @@ During development, we identified and resolved the following:
 ---
 
 ## 🤝 Team
-- **Harsheet Dwivedi** - AI Architect & Backend Systems Engineer
-- **Pratham Singh Shaurya** - Lead Frontend Developer & UI/UX Designer
-- **Macmilan Cyril Singh** - Full-Stack Developer & Integration Specialist
+- **Harsheet Dwivedi** - AI Architect & Systems Integration Specialist
+- **Pratham Singh Shaurya** - Frontend Lead & UI/UX Designer
+- **Macmilan Cyril Singh** - Junior Developer & Quality Assurance (Testing)
 
 ---
 
