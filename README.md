@@ -92,7 +92,7 @@ During development, we identified and resolved the following:
 ## 🤝 Team
 - **Harsheet Dwivedi** - AI Architect & Systems Integration Specialist
 - **Pratham Singh Shaurya** - Frontend Lead & UI/UX Designer
-- **Macmilan Cyril Singh** - Junior Developer & Quality Assurance (Testing)
+- **Macmilan Cyril Singh** - Technical Operations & Quality Assurance Lead
 
 ---
 
