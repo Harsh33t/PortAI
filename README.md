@@ -87,8 +87,12 @@ During development, we identified and resolved the following:
 
 ---
 
+---
+
 ## 🤝 Team
-- **Pratham Singh** - Lead Developer / AI Architect
+- **Harsheet Dwivedi** - AI Architect & Backend Systems Engineer
+- **Pratham Singh Shaurya** - Lead Frontend Developer & UI/UX Designer
+- **Macmilan Cyril Singh** - Full-Stack Developer & Integration Specialist
 
 ---
 
