@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import StockChart from '../../components/StockChart';
+import DetailModal from '../../components/DetailModal';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://portai-xsw3.onrender.com';
 
@@ -54,6 +55,9 @@ export default function IntelligencePage() {
   const [activeTab, setActiveTab] = useState<'analyst' | 'news' | 'trending'>('analyst');
   const [marketHistory, setMarketHistory] = useState<Record<string, any[]>>({});
   const [analysisSymbol, setAnalysisSymbol] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'stock' | 'news'>('stock');
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
   useEffect(() => {
     fetchNews();
@@ -138,6 +142,19 @@ export default function IntelligencePage() {
     } catch {
       setError('The AI engine is syncing. Please refresh in 10 seconds.');
     } finally { setLoading(false); }
+  };
+
+  const openStockModal = (sym: string, currentData: any = {}) => {
+    setSelectedItem({ ...currentData, symbol: sym });
+    setModalType('stock');
+    setModalOpen(true);
+    if (!marketHistory[sym]) fetchHistory(sym);
+  };
+
+  const openNewsModal = (article: NewsArticle) => {
+    setSelectedItem(article);
+    setModalType('news');
+    setModalOpen(true);
   };
 
   const sentimentColor = (s: string) => s === 'Bullish' ? 'text-emerald-400' : s === 'Bearish' ? 'text-red-400' : 'text-blue-400';
@@ -352,8 +369,11 @@ export default function IntelligencePage() {
                 </div>
                 <div className="space-y-3">
                   {news.length > 0 ? news.map((a, i) => (
-                    <a key={i} href={a.url} target="_blank" rel="noreferrer"
-                      className="flex gap-4 p-4 glass-panel rounded-xl hover:bg-white/[0.04] transition-all group border border-transparent hover:border-white/10">
+                    <button 
+                      key={i} 
+                      onClick={() => openNewsModal(a)}
+                      className="w-full text-left flex gap-4 p-4 glass-panel rounded-xl hover:bg-white/[0.04] transition-all group border border-transparent hover:border-white/10 cursor-pointer"
+                    >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-[9px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 font-medium">{a.source}</span>
@@ -362,8 +382,8 @@ export default function IntelligencePage() {
                         <h3 className="text-sm text-white font-medium leading-snug group-hover:text-blue-400 transition-colors mb-1">{a.title}</h3>
                         {a.description && <p className="text-[11px] text-white/40 leading-relaxed line-clamp-2">{a.description}</p>}
                       </div>
-                      <iconify-icon icon="solar:arrow-right-up-linear" className="text-white/20 group-hover:text-blue-400 transition-colors flex-shrink-0 mt-1"></iconify-icon>
-                    </a>
+                      <iconify-icon icon="solar:eye-linear" className="text-white/20 group-hover:text-blue-400 transition-colors flex-shrink-0 mt-1"></iconify-icon>
+                    </button>
                   )) : Array.from({length: 6}).map((_, i) => (
                     <div key={i} className="p-4 glass-panel rounded-xl animate-pulse">
                       <div className="h-3 w-20 bg-white/5 rounded mb-3"></div>
@@ -386,7 +406,7 @@ export default function IntelligencePage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {trendingStocks.length > 0 ? trendingStocks.map((stock) => (
-                    <button key={stock.symbol} onClick={() => { setActiveTab('analyst'); runAnalysis(`Analyze ${stock.symbol} stock. Should I buy it today?`); }}
+                    <button key={stock.symbol} onClick={() => openStockModal(stock.symbol, stock)}
                       className="glass-panel rounded-xl p-5 text-left hover:bg-white/[0.04] transition-all cursor-pointer group border border-white/5 hover:border-blue-500/20">
                       <div className="flex items-center justify-between mb-3">
                         <div>
@@ -415,9 +435,17 @@ export default function IntelligencePage() {
                          )}
                       </div>
 
-                      <div className="text-[10px] text-white/30 group-hover:text-blue-400 transition-colors flex items-center gap-1">
-                        <iconify-icon icon="solar:magic-stick-3-linear"></iconify-icon>
-                        Analyze with AI →
+                      <div className="flex items-center justify-between">
+                         <div className="text-[10px] text-white/30 group-hover:text-blue-400 transition-colors flex items-center gap-1">
+                           <iconify-icon icon="solar:chart-2-linear"></iconify-icon>
+                           Full Chart →
+                         </div>
+                         <button 
+                           onClick={(e) => { e.stopPropagation(); setActiveTab('analyst'); runAnalysis(`Analyze ${stock.symbol} stock. Should I buy it today?`); }} 
+                           className="px-2 py-1 rounded bg-blue-600/20 text-blue-400 text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-all"
+                         >
+                           AI Analyst
+                         </button>
                       </div>
                     </button>
                   )) : Array.from({length: 6}).map((_, i) => (
@@ -483,11 +511,11 @@ export default function IntelligencePage() {
                 </h3>
                 <div className="space-y-3">
                   {news.slice(0, 4).map((a, i) => (
-                    <a key={i} href={a.url} target="_blank" rel="noreferrer"
-                      className="block group">
-                      <div className="text-xs text-white/70 leading-snug group-hover:text-white transition-colors line-clamp-2">{a.title}</div>
+                    <button key={i} onClick={() => openNewsModal(a)}
+                      className="w-full text-left group block">
+                      <div className="text-xs text-white/70 leading-snug group-hover:text-blue-400 transition-colors line-clamp-2">{a.title}</div>
                       <div className="text-[9px] text-white/30 mt-1">{a.source}</div>
-                    </a>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -495,6 +523,13 @@ export default function IntelligencePage() {
           </div>
         </div>
       </div>
+      <DetailModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        type={modalType} 
+        data={selectedItem} 
+        history={selectedItem ? marketHistory[selectedItem.symbol] : undefined}
+      />
     </main>
   );
 }

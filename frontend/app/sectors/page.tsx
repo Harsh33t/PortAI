@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import StockChart from '../../components/StockChart';
+import DetailModal from '../../components/DetailModal';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://portai-xsw3.onrender.com';
 
@@ -37,6 +38,14 @@ export default function SectorsPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState('');
   const [marketHistory, setMarketHistory] = useState<Record<string, any[]>>({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'stock' | 'news'>('stock');
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const sectorIndices: Record<string, string> = {
+    'IT': '^CNXIT', 'Banking': '^NSEBANK', 'Pharma': '^CNXPHARMA',
+    'FMCG': '^CNXFMCG', 'Auto': '^CNXAUTO', 'Energy': '^CNXENERGY',
+    'Infra': '^CNXINFRA', 'Telecom': '^CNXTELECOM',
+  };
 
   useEffect(() => {
     fetchSectors();
@@ -76,6 +85,21 @@ export default function SectorsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openStockModal = (sym: string, currentData: any = {}) => {
+    setSelectedItem({ ...currentData, symbol: sym });
+    setModalType('stock');
+    setModalOpen(true);
+    if (!marketHistory[sym]) fetchHistory(sym, sym);
+  };
+
+  const openSectorModal = (sectorName: string, data: any) => {
+    const symbol = sectorIndices[sectorName] || sectorName;
+    setSelectedItem({ ...data, symbol: sectorName });
+    setModalType('stock');
+    setModalOpen(true);
+    if (!marketHistory[sectorName]) fetchHistory(sectorName, symbol);
   };
 
   const fetchHistory = async (name: string, symbol: string) => {
@@ -310,6 +334,13 @@ export default function SectorsPage() {
           </Link>
         </div>
       </div>
+      <DetailModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        type={modalType} 
+        data={selectedItem} 
+        history={selectedItem ? marketHistory[selectedItem.symbol] || marketHistory[selectedItem.name] : undefined}
+      />
     </main>
   );
 }

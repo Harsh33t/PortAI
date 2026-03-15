@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import createGlobe from 'cobe';
 import StockChart from '../components/StockChart';
+import DetailModal from '../components/DetailModal';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://portai-xsw3.onrender.com';
 
@@ -90,6 +91,9 @@ export default function Dashboard() {
   const [brokerToken, setBrokerToken] = useState<string | null>(null);
   const [brokerHoldings, setBrokerHoldings] = useState<any[]>([]);
   const [marketHistory, setMarketHistory] = useState<Record<string, any[]>>({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'stock' | 'news'>('stock');
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
   useEffect(() => {
     fetchMarket();
@@ -201,6 +205,19 @@ export default function Dashboard() {
     } finally { setLoading(false); }
   };
 
+  const openStockModal = (sym: string, currentData: any) => {
+    setSelectedItem({ ...currentData, symbol: sym });
+    setModalType('stock');
+    setModalOpen(true);
+    if (!marketHistory[sym]) fetchHistory(sym);
+  };
+
+  const openNewsModal = (article: NewsArticle) => {
+    setSelectedItem(article);
+    setModalType('news');
+    setModalOpen(true);
+  };
+
   const sentimentColor = (s: string) => s === 'Bullish' ? 'text-emerald-400' : s === 'Bearish' ? 'text-red-400' : 'text-blue-400';
   const sentimentBg = (s: string) => s === 'Bullish' ? 'bg-emerald-500/10 border-emerald-500/20' : s === 'Bearish' ? 'bg-red-500/10 border-red-500/20' : 'bg-blue-500/10 border-blue-500/20';
 
@@ -294,8 +311,12 @@ export default function Dashboard() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {Object.entries(market).length > 0 ? Object.entries(market).map(([name, data]) => (
-                      <div key={name} className="glass-panel rounded-xl p-5 hover:bg-white/[0.04] transition-all group border border-white/5 hover:border-white/10 outline outline-1 outline-transparent hover:outline-white/10">
-                          <div className="flex justify-between items-start mb-4">
+                      <button 
+                        key={name} 
+                        onClick={() => openStockModal(name, data)}
+                        className="glass-panel text-left rounded-xl p-5 hover:bg-white/[0.04] transition-all group border border-white/5 hover:border-white/10 outline outline-1 outline-transparent hover:outline-white/10 cursor-pointer"
+                      >
+                          <div className="flex justify-between items-start mb-4 text-left">
                             <div>
                                 <div className="text-[10px] text-white/40 uppercase tracking-widest mb-1 font-medium">{name}</div>
                                 <div className="text-xl font-medium text-white tracking-tight">₹{data.price?.toLocaleString('en-IN')}</div>
@@ -322,7 +343,10 @@ export default function Dashboard() {
                               </div>
                             )}
                           </div>
-                      </div>
+                          <div className="text-[9px] text-white/20 group-hover:text-blue-400 transition-colors uppercase tracking-widest font-bold mt-3 flex items-center gap-1">
+                            Analyze details <iconify-icon icon="solar:arrow-right-linear"></iconify-icon>
+                          </div>
+                      </button>
                   )) : (
                       Array.from({length: 5}).map((_, i) => (
                           <div key={i} className="glass-panel rounded-xl p-4 animate-pulse">
@@ -635,10 +659,17 @@ export default function Dashboard() {
             </div>
             <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1 scrollbar-hide">
               {news.map((a, i) => (
-                <a key={i} href={a.url} target="_blank" rel="noreferrer" className="block p-3 rounded-xl bg-black/40 border border-white/5 hover:bg-white/5 hover:border-white/20 transition-all">
-                  <div className="text-[10px] text-emerald-400/80 mb-1 font-medium">{a.source}</div>
+                <button 
+                  key={i} 
+                  onClick={() => openNewsModal(a)} 
+                  className="w-full text-left block p-3 rounded-xl bg-black/40 border border-white/5 hover:bg-white/5 hover:border-white/20 transition-all cursor-pointer group"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="text-[10px] text-emerald-400/80 mb-1 font-medium">{a.source}</div>
+                    <iconify-icon icon="solar:eye-linear" className="text-white/10 group-hover:text-blue-400 transition-colors"></iconify-icon>
+                  </div>
                   <p className="text-xs text-white/80 leading-relaxed font-light">{a.title}</p>
-                </a>
+                </button>
               ))}
               {news.length === 0 && <p className="text-xs text-white/30 italic">Loading news feed...</p>}
             </div>
@@ -697,6 +728,15 @@ export default function Dashboard() {
             </div>
         </div>
       </footer>
+
+      {/* Detail Modal */}
+      <DetailModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        type={modalType} 
+        data={selectedItem} 
+        history={selectedItem ? marketHistory[selectedItem.symbol] : undefined}
+      />
     </main>
   );
 }

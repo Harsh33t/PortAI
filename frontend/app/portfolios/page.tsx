@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import StockChart from '../../components/StockChart';
+import DetailModal from '../../components/DetailModal';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://portai-xsw3.onrender.com';
 
@@ -91,6 +92,26 @@ export default function PortfoliosPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<'broker' | 'upload' | 'samples'>('samples');
   const [marketHistory, setMarketHistory] = useState<Record<string, any[]>>({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'stock' | 'news'>('stock');
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+
+  const openStockModal = (sym: string, currentData: any = {}) => {
+    setSelectedItem({ ...currentData, symbol: sym });
+    setModalType('stock');
+    setModalOpen(true);
+    if (!marketHistory[sym]) fetchHistory(sym);
+  };
+
+  const fetchHistory = async (symbol: string) => {
+    try {
+      const r = await fetch(`${API_BASE}/api/history/${encodeURIComponent(symbol)}?period=1mo`);
+      const d = await r.json();
+      if (d.history) {
+        setMarketHistory(prev => ({ ...prev, [symbol]: d.history }));
+      }
+    } catch (err) {}
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('upstox_access_token');
@@ -117,17 +138,6 @@ export default function PortfoliosPage() {
         data.holdings.forEach((h: any) => fetchHistory(h.symbol));
       }
     } catch (e) { console.error('Failed to fetch broker holdings', e); }
-  };
-
-  const fetchHistory = async (symbol: string) => {
-    if (marketHistory[symbol]) return;
-    try {
-      const r = await fetch(`${API_BASE}/api/history/${encodeURIComponent(symbol)}?period=1mo`);
-      const d = await r.json();
-      if (d.history) {
-        setMarketHistory(prev => ({ ...prev, [symbol]: d.history }));
-      }
-    } catch (err) {}
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -339,12 +349,16 @@ export default function PortfoliosPage() {
                   {brokerHoldings.length > 0 && (
                     <div className="space-y-2">
                       {brokerHoldings.map((h, i) => (
-                        <div key={i} className="flex justify-between items-center text-xs p-3 rounded-xl bg-black/40 border border-white/5">
-                          <span className="text-white/80 font-medium">{h.symbol}</span>
+                        <button 
+                          key={i} 
+                          onClick={() => openStockModal(h.symbol, h)}
+                          className="w-full text-left flex justify-between items-center text-xs p-3 rounded-xl bg-black/40 border border-white/5 hover:bg-white/5 transition-all cursor-pointer group/row"
+                        >
+                          <span className="text-white/80 font-medium group-hover/row:text-white">{h.symbol}</span>
                           <span className={h.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}>
                             {h.pnl >= 0 ? '+' : ''}{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(h.pnl)} ({h.pnl_pct}%)
                           </span>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   )}
@@ -401,6 +415,13 @@ export default function PortfoliosPage() {
           </div>
         )}
       </div>
+      <DetailModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        type={modalType} 
+        data={selectedItem} 
+        history={selectedItem ? marketHistory[selectedItem.symbol] : undefined}
+      />
     </main>
   );
 }

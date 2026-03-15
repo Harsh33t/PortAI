@@ -29,12 +29,9 @@ export default function Header() {
         {/* Logo Section */}
         <div className="flex items-center gap-4 relative z-10 group cursor-pointer">
           <div className="relative">
-            <div className="flex text-black bg-white w-9 h-9 rounded-xl items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.4)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.6)] transition-all duration-500 overflow-hidden">
-               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+            <div className="relative flex text-black bg-white w-9 h-9 rounded-xl items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.4)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.6)] transition-all duration-500 overflow-hidden">
                <iconify-icon icon="solar:shield-check-bold" width="22"></iconify-icon>
             </div>
-            {/* Soft pulse glow behind logo */}
-            <div className="absolute -inset-2 bg-blue-400/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
           </div>
           <span className="text-lg font-bold tracking-tighter shimmer-text">PortAI</span>
         </div>

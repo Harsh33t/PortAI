@@ -13,7 +13,7 @@ class Holding(BaseModel):
 
 UPSTOX_API_KEY = os.getenv("UPSTOX_API_KEY")
 UPSTOX_API_SECRET = os.getenv("UPSTOX_API_SECRET")
-UPSTOX_REDIRECT_URI = "http://localhost:3000/callback/upstox"
+UPSTOX_REDIRECT_URI = os.getenv("UPSTOX_REDIRECT_URI", "https://port-ai-alpha.vercel.app/callback/upstox")
 
 # Mock data for when API keys are not provided
 MOCK_HOLDINGS = [

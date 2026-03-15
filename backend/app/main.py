@@ -227,7 +227,7 @@ async def fetch_indian_news():
     try:
         async with httpx.AsyncClient(timeout=10) as c:
             resp = await c.get("https://newsapi.org/v2/top-headlines", params={
-                "country": "in", "category": "business", "pageSize": 15, "apiKey": NEWS_API_KEY
+                "country": "in", "category": "business", "pageSize": 30, "apiKey": NEWS_API_KEY
             })
             if resp.status_code != 200:
                 return SAMPLE_NEWS
@@ -346,6 +346,18 @@ async def fetch_yahoo_stock_detail(symbol: str):
     except Exception:
         return None
 
+async def fetch_yahoo_news(symbol: str):
+    """Fetches real-time stories directly from Yahoo Finance."""
+    try:
+        nse_sym = symbol.upper() + ".NS" if not symbol.endswith((".NS", ".BO")) else symbol
+        t = yf.Ticker(nse_sym)
+        news = await asyncio.to_thread(lambda: t.news)
+        if news:
+            return [{"title": n.get("title"), "publisher": n.get("publisher"), "link": n.get("link")} for n in news[:5]]
+    except Exception as e:
+        print(f"Yahoo News fetch error: {e}")
+    return None
+
 # ── Groq Analysis ─────────────────────────────────────────────
 async def analyze_with_groq(query: str, news_ctx: str, market_ctx: str, extra_ctx: str):
     if not GROQ_API_KEY or not groq_client:
@@ -355,26 +367,31 @@ async def analyze_with_groq(query: str, news_ctx: str, market_ctx: str, extra_ct
 
     model_name = "llama-3.3-70b-versatile"
 
-    system_prompt = """You are PortAI, an elite institutional-grade financial analyst. You provide hedge-fund-quality intelligence to Indian retail investors.
+    system_prompt = """You are PortAI, an elite institutional-grade financial intelligence engine. You provide hedge-fund-quality analysis that synthesizes raw data into non-obvious, actionable alpha.
+
+Your task is to provide UNIQUE, institutional-level insights. Avoid "basic" summaries. Move beyond what's on the surface to find hidden correlations, institutional rotation patterns, and "unknown" or counter-intuitive signals.
 
 You MUST respond ONLY with valid JSON (no markdown fences, no extra text). Use this exact structure:
 {
-  "summary": "3-4 sentence executive intelligence briefing. Write like a senior analyst at Goldman Sachs.",
+  "summary": "3-4 sentence intensive executive briefing. Write like a chief strategist at a top-tier hedge fund. Use high-conviction, professional language.",
   "sentiment": "Bullish" or "Bearish" or "Neutral",
   "portfolio_score": 0-100,
-  "key_insights": ["List of 3-5 specific institutional-quality insights as strings"],
-  "risks": ["List of 2-4 critical risks as strings"],
-  "recommendations": ["List of 3-5 specific actionable recommendations as strings"],
+  "key_insights": [
+    "Identify a non-obvious market correlation or a specific institutional flow pattern found in the data.",
+    "Uncover a specific technical or fundamental signal that retail traders usually miss.",
+    "Provide a deep-dive observation about sector rotation or macroeconomic impact derived from the latest news."
+  ],
+  "risks": ["Identify structural or tail-end risks that aren't immediately apparent to the public."],
+  "recommendations": ["Actionable, strategic plays (e.g., 'Utilize a covered bridge strategy', 'Wait for retest of the 200-DMA', etc.)."],
   "sector_exposure": {"Sector": percentage},
   "data_sources": ["list data sources used"]
 }
 
 Guidelines:
-- Be specific to Indian markets (NSE, BSE, Nifty, Sensex, SEBI, RBI).
-- Reference actual data provided. Use technical indicators if available.
-- Identify behavioral biases (disposition effect, herd mentality, recency bias, anchoring).
-- Provide institutional-grade risk assessment.
-- Include sector concentration analysis when portfolio data is given."""
+- SYNTHESIZE: Don't just list news. Connect the dots between a news event and its ripple effect on specific tickers.
+- BE UNIQUE: Provide insights that aren't found on the front page of news sites. Look for the "why behind the why".
+- BE SPECIFIC: Reference NSE/BSE specific mechanics, FII/DII flow trends, and SEBI/RBI policy nuances.
+- BE PROFESSIONAL: Use institutional terminology (e.g., "alpha generation," "beta exposure," "theta decay," "liquidity sweep," "order block")."""
 
     user_prompt = f"""INTELLIGENCE REQUEST:
 {query}
@@ -443,6 +460,10 @@ async def build_extra_context(query: str):
         if fh_news:
             parts.append(f"FINNHUB NEWS – {symbol}:\n" + "\n".join([f"  - {a['headline']} ({a['source']})" for a in fh_news]))
             sources.append("Finnhub")
+        y_news = await fetch_yahoo_news(symbol)
+        if y_news:
+            parts.append(f"YAHOO FINANCE NEWS – {symbol}:\n" + "\n".join([f"  - {a['title']} ({a['publisher']})" for a in y_news]))
+            sources.append("Yahoo Finance News")
         fh_sent = await fetch_finnhub_sentiment(symbol)
         if fh_sent:
             parts.append(f"INSIDER SENTIMENT – {symbol}: MSPR={fh_sent.get('mspr')}, Change={fh_sent.get('change')}")
