@@ -22,7 +22,8 @@ export default function UpstoxCallback() {
 
   const fetchToken = async (authCode: string) => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/broker/callback/upstox', {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://portai-xsw3.onrender.com';
+      const res = await fetch(`${API_BASE}/api/broker/callback/upstox`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: authCode }),

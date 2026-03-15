@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://portai-xsw3.onrender.com';
 
 const SECTOR_ICONS: Record<string, string> = {
   'IT': 'solar:laptop-linear',

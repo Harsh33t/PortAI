@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://portai-xsw3.onrender.com';
 
 // ── Sample Portfolio Templates ──────────────────────────────────
 const SAMPLE_PORTFOLIOS = [
