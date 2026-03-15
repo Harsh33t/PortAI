@@ -16,8 +16,15 @@ from app.services.broker_service import generate_upstox_login_url, exchange_upst
 app = FastAPI(title="PortAI – Intelligence API")
 
 app.add_middleware(
-    CORSMiddleware, allow_origins=["*"], allow_credentials=True,
-    allow_methods=["*"], allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://port-ai-delta.vercel.app"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ── Global API Clients ──────────────────────────────────────────
