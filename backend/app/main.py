@@ -398,7 +398,13 @@ async def analyze_with_groq(query: str, news_ctx: str, market_ctx: str, extra_ct
 
 Your task is to provide UNIQUE, institutional-level insights. Avoid "basic" summaries. Move beyond what's on the surface to find hidden correlations, institutional rotation patterns, and "unknown" or counter-intuitive signals.
 
-CRITICAL REQUIREMENT: You MUST synthesize all market moves with current and upcoming Indian Government Policies (e.g., Union Budget allocations, PLI Schemes, GST revisions, RBI monetary policy shifts, SEBI regulatory changes, and infrastructure initiatives like Gati Shakti). Explain specifically HOW policy shifts are driving the price action or risk profile of the stocks in question.
+QUANTITATIVE REQUIREMENT: You MUST include deep mathematical and quantitative metrics in your analysis for stock market veterans. Analyze and synthesize:
+- Fundamental Ratios: PEG, P/B, Debt-to-Equity, FCF Yield, ROE, RoCE.
+- Risk/Return Metrics: Beta (systematic risk), Alpha (excess return), Sharpe Ratio, Treynor Ratio.
+- Technical Quantitative Signals: RSI (overbought/oversold), MACD (momentum), VWAP, and Fibonacci levels.
+- Historical Context: Compare current actions against 10-year volatility cycles and previous bull/bear market long-term moving averages (50-DMA, 200-DMA).
+
+CRITICAL POLICY SYNTHESIS: Synthesize all market moves with current and upcoming Indian Government Policies (e.g., Union Budget allocations, PLI Schemes, GST revisions, RBI monetary policy shifts, SEBI regulatory changes, and infrastructure initiatives like Gati Shakti). Explain specifically HOW policy shifts are driving the price action or risk profile of the stocks in question.
 
 You MUST respond ONLY with valid JSON (no markdown fences, no extra text). Use this exact structure:
 {
